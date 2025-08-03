@@ -60,6 +60,8 @@ public class NetworkClient : MonoBehaviour
         lastIp = "127.0.0.1";
         lastPort = 12345;
         Connect(lastIp, lastPort);            // 默认连接本地服务器端口 12345
+
+        GameObject.DontDestroyOnLoad(gameObject); // 保留当前脚本所在的物体
     }
 
     // Unity 生命周期：退出应用时断开连接
@@ -192,7 +194,7 @@ public class NetworkClient : MonoBehaviour
                 }
                 else if (heartbeat.Type == "pong")
                 {
-                    Debug.Log("收到服务器 pong");
+                    // Debug.Log("收到服务器 pong");
                 }
                 break;
 
@@ -229,7 +231,7 @@ public class NetworkClient : MonoBehaviour
     public void SendRequest(ApiRequest request)
     {
         byte[] body = request.ToByteArray();
-        Debug.Log($"[NetworkClient] protobuf长度={body.Length}, protobuf前5字节={BitConverter.ToString(body, 0, Math.Min(5, body.Length))}");
+        // Debug.Log($"[NetworkClient] protobuf长度={body.Length}, protobuf前5字节={BitConverter.ToString(body, 0, Math.Min(5, body.Length))}");
 
         byte messageType = 0x02; // 业务请求类型
 
@@ -241,7 +243,7 @@ public class NetworkClient : MonoBehaviour
         fullData[4] = messageType; // 设置消息类型
         Buffer.BlockCopy(body, 0, fullData, 5, body.Length);
 
-        Debug.Log($"[NetworkClient] 发送请求，总长度={fullData.Length}, 长度字段={totalLength}, 前4字节={BitConverter.ToString(fullData, 0, 4)}");
+        // Debug.Log($"[NetworkClient] 发送请求，总长度={fullData.Length}, 长度字段={totalLength}, 前4字节={BitConverter.ToString(fullData, 0, 4)}");
 
         Enqueue(fullData);
     }
@@ -350,7 +352,7 @@ public class NetworkClient : MonoBehaviour
                 try
                 {
                     SendHeartbeat("ping");
-                    Debug.Log("发送 ping");
+                    // Debug.Log("发送 ping");
                     Thread.Sleep(10000); // 每 10 秒 ping 一次
                 }
                 catch (Exception e)

@@ -69,8 +69,7 @@ public class UserRegister : MonoBehaviour, IPointerClickHandler
     void OnDestroy()
     {
         // 解绑事件，避免重复触发或内存泄漏
-        if (NetworkClient.Instance != null)
-            NetworkClient.Instance.OnApiResponse -= OnApiResponse;
+        if (NetworkClient.Instance != null) NetworkClient.Instance.OnApiResponse -= OnApiResponse;
     }
 
     // 用户名输入框编辑完成后触发
@@ -175,15 +174,19 @@ public class UserRegister : MonoBehaviour, IPointerClickHandler
 
     private void OnApiResponse(ApiResponse response)
     {
-        Debug.Log("收到服务器响应: " + response.Message);
+        Debug.Log("[UserRegister] 收到服务器响应: " + response.Message);
 
         if (step == 1)
         {
             if (response.Success)
             {
-                Debug.Log($"用户创建成功: {response.User.UserName}, ID: {response.User.UserId}");
+                // 从session中获取返回的user数据
+                User user = response.Session.Data.User;
+                Debug.Log($"用户创建成功: {user.UserName}, ID: {user.UserId}");
+
                 // 显示提示信息面板
                 PromptMessage.Instance.ShowInfo(response.Message);
+
                 step = 2;  // 成功后进入下一阶段
             }
             else

@@ -4,5 +4,18 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/UserLoginScene.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/SelectPlayers.unity
+    guid: a276f3f1fb60cbb4b9d76e61e8295fb3
+  - enabled: 1
+    path: Assets/Scenes/CreatePlayer.unity
+    guid: 8f4501633fb23d343a643b4b7be0a53e
+  - enabled: 1
+    path: Assets/Scenes/MianWorld.unity
+    guid: e941a7520415e4b428d225aae5664115
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0

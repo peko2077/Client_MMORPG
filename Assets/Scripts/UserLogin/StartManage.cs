@@ -25,7 +25,10 @@ public class StartManage : MonoBehaviour
 
     void Update()
     {
-
+        if (Input.GetMouseButtonDown(0))
+        {
+            Debug.Log($"跳转到创建玩家界面......");
+        }
     }
 
     // 启动循环的透明到不透明效果

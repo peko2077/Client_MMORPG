@@ -1,16 +1,14 @@
-using System;
-using System.Collections;
-using Google.Protobuf;
+using System.Collections.Generic;
 using Mymmorpg;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Client.service;
 
 public class UserLogin : MonoBehaviour
 {
     public static UserLogin Instance;
-
-    private int step = 0;
 
     // 用于延迟验证的标志
     private bool isUserNameValid = false;  // 用户名是否有效
@@ -23,6 +21,13 @@ public class UserLogin : MonoBehaviour
     // 定义一个 Button 变量，用于确认按钮
     private Button OKButton;
     private Button backButton;
+
+    private int step = 0;
+
+    private int userId;
+
+    private List<Player> players = new();
+    public List<Player> Players => players; // 公有只读属性（其他类只能读，不能直接修改）
 
     void Awake()
     {
@@ -57,6 +62,14 @@ public class UserLogin : MonoBehaviour
 
         // 订阅响应事件
         NetworkClient.Instance.OnApiResponse += OnApiResponse;
+    }
+
+    void OnDestroy()
+    {
+        if (NetworkClient.Instance != null)
+        {
+            NetworkClient.Instance.OnApiResponse -= OnApiResponse;
+        }
     }
 
     void OnUserNameEditEnd(string input)
@@ -106,44 +119,87 @@ public class UserLogin : MonoBehaviour
         string userName = userNameInput.text;
         string password = passwordInput.text;
 
-        // 第一步：发送 AddPlayer 请求
-        ApiRequest request = new ApiRequest
-        {
-            Command = "LoginUser",
-            LoginUser = new LoginUserRequest
-            {
-                UserName = userName,
-                Password = password,
-            }
-        };
+        // 使用封装后的 Service 来发送登录请求
+        LoginUserService.LoginUser(userName, password);
 
         step = 1; // 标记当前是 用户登录 阶段
-
-        NetworkClient.Instance.SendRequest(request); // 发送请求
     }
 
     private void OnApiResponse(ApiResponse response)
     {
-        Debug.Log("收到服务器响应: " + response.Message);
+        Debug.Log("[UserLogin] 收到服务器响应: " + response.Message);
 
-        if (step == 1)
+        if (response.Command == "LoginUser")
         {
-            if (response.Success)
+            HandleloginResponse(response);
+        }
+        else if (response.Command == "GetPlayersByUserId")
+        {
+            HandlePlayerListResponse(response);
+        }
+        else
+        {
+            Debug.Log($"未处理的命令: {response.Command}");
+        }
+
+    }
+
+    private void HandleloginResponse(ApiResponse response)
+    {
+        if (response.Success)
+        {
+            User user = response.Session.Data.User;
+
+            Debug.Log($"[UserLogin.cs] [OnApiResponse] 用户登录成功, ID: {user.UserId}, userName: {user.UserName}");
+
+            // 将登录之后获取到的userId提取出来
+            userId = user.UserId;
+
+            step = 2;  // 成功后进入下一阶段
+
+            // 显示提示信息面板
+            PromptMessage.Instance.ShowInfo(response.Message);
+
+            Debug.Log($"准备请求玩家列表, userId={userId}");
+
+            ApiRequest playerListRequest = new ApiRequest
             {
-                Debug.Log($"用户登录成功: {response.User.UserName}, ID: {response.User.UserId}");
-                // 显示提示信息面板
-                PromptMessage.Instance.ShowInfo(response.Message);
-                step = 2;  // 成功后进入下一阶段
-            }
-            else
-            {
-                Debug.Log($"用户登录失败: {response.Error}");
-                // 显示提示信息面板
-                PromptMessage.Instance.ShowInfo(response.Message);
-                // 完成后恢复按钮
-                OKButton.interactable = true;
-                step = 0;  // 失败后重置
-            }
+                Command = "GetPlayersByUserId",
+                GetPlayersByUserId = new GetPlayersByUserIdRequest
+                {
+                    UserId = userId
+                }
+            };
+            NetworkClient.Instance.SendRequest(playerListRequest);
+            
+        }
+        else
+        {
+            Debug.Log($"用户登录失败: {response.Error}");
+            // 显示提示信息面板
+            PromptMessage.Instance.ShowInfo(response.Message);
+            // 完成后恢复按钮
+            OKButton.interactable = true;
+            step = 0;  // 失败后重置
+        }
+    }
+
+    private void HandlePlayerListResponse(ApiResponse response)
+    {
+        if (response.Success)
+        {
+            Debug.Log($"[HandlePlayerListResponse] 查询成功, 该用户选择玩家...");
+            players.AddRange(response.Session.Data.Players);
+
+            // 跳转场景 【选择场景】
+            SceneManager.LoadScene(1);
+
+        }
+        else
+        {
+            Debug.Log($"查询失败, 该用户下没有玩家, 加载创建角色界面...");
+            // 跳转场景 【创建角色场景】
+            SceneManager.LoadScene(2);
         }
     }
 

@@ -85,45 +85,45 @@ public class CreatePlayerOKButton : MonoBehaviour
         // 根据 response 做进一步处理
 
         // 步骤1：收到添加角色的响应
-        if (step == 1 && response.Success && response.Player != null)
-        {
-            Debug.Log($"角色创建成功: {response.Player.PlayerName}, ID: {response.Player.PlayerId}");
+        // if (step == 1 && response.Success && response.Player != null)
+        // {
+        //     Debug.Log($"角色创建成功: {response.Player.PlayerName}, ID: {response.Player.PlayerId}");
 
-            // 第二步：更新该角色的 userId
-            ApiRequest updateRequest = new ApiRequest
-            {
-                Command = "UpdatePlayer",
-                UpdatePlayer = new UpdatePlayerRequest
-                {
-                    PlayerId = response.Player.PlayerId,
-                    UserId = userId
-                }
-            };
+        //     // 第二步：更新该角色的 userId
+        //     ApiRequest updateRequest = new ApiRequest
+        //     {
+        //         Command = "UpdatePlayer",
+        //         UpdatePlayer = new UpdatePlayerRequest
+        //         {
+        //             PlayerId = response.Player.PlayerId,
+        //             UserId = userId
+        //         }
+        //     };
 
-            step = 2;
-            NetworkClient.Instance.SendRequest(updateRequest);
-        }
-        // 步骤2：收到更新 userId 的响应
-        else if (step == 2)
-        {
-            if (response.Success)
-            {
-                Debug.Log($"用户绑定成功: {response.Message}");
+        //     step = 2;
+        //     NetworkClient.Instance.SendRequest(updateRequest);
+        // }
+        // // 步骤2：收到更新 userId 的响应
+        // else if (step == 2)
+        // {
+        //     if (response.Success)
+        //     {
+        //         Debug.Log($"用户绑定成功: {response.Message}");
 
-                // 关闭此页面
-                CloseButton();
-            }
-            else
-            {
-                Debug.LogWarning($"绑定失败: {response.Error}");
+        //         // 关闭此页面
+        //         CloseButton();
+        //     }
+        //     else
+        //     {
+        //         Debug.LogWarning($"绑定失败: {response.Error}");
 
-                // 返回从新创建玩家
-            }
+        //         // 返回从新创建玩家
+        //     }
 
-            // 完成后恢复按钮
-            createPlayerOKButton.interactable = true;
-            step = 0;
-        }
+        //     // 完成后恢复按钮
+        //     createPlayerOKButton.interactable = true;
+        //     step = 0;
+        // }
 
     }
 
